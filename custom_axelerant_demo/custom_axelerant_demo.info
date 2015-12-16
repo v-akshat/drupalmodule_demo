@@ -1,0 +1,5 @@
+name = Custom Axelerant Demo Module
+description = "Custom  demo module created to alter the site information page and add additional fields"
+package = custom
+version = "7.x-1.0"
+core = "7.x"

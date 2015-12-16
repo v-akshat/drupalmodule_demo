@@ -1,0 +1,69 @@
+<?php
+/**
+ * @file
+ * Custom modifications to site information settings page
+ */
+
+/**
+ * Implementation of hook_menu()
+ *
+ */
+function custom_axelerant_demo_menu() {
+  $items['page_json/%/%'] = array(
+    'title' => 'JSON output of a page',
+    'page callback' => 'get_page_json',
+    'page arguments' => array(1,2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    );
+  return $items;
+}
+
+/**
+ * Callback function for menu item page_json/%/%
+ * @param  $apikey The site api key saved as a system variable
+ * @param  $nid    Node ID of the page
+ * @return json output of the node
+ */
+function get_page_json($apikey, $nid){
+
+//return access denied page if the site key in the url doednot match the system sitekey
+  if ($apikey != variable_get('siteapikey')) {
+    return drupal_access_denied();
+  }
+  $node = node_load($nid);
+  if ($node && $node->type == 'page') {
+    //printing the json output of the page
+    print json_encode($node);
+  }
+  else {
+    return drupal_access_denied();
+  }
+}
+/**
+ * Implementation of hook_form_alter
+ *
+ */
+function custom_axelerant_demo_form_system_site_information_settings_alter(&$form, &$form_state, $form_id){
+  $form['site_information']['site_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Site API Key'),
+    '#description' => t('Enter the site api key'),
+    '#default_value' => variable_get('siteapikey', 'No Site API key yet'),
+    );
+  $form['#submit'][] = 'custom_axelerant_demo_form_system_site_information_settings_submit';
+  $form['actions']['submit']['#value'] = 'Update Configuration';
+}
+
+/**
+ * Implementation of hook_form_submit
+ * Custom submit function for the site information settings form
+ *
+ */
+function custom_axelerant_demo_form_system_site_information_settings_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  if (!empty($values['site_api_key'])) {
+    variable_set('siteapikey', $values['site_api_key']);
+    drupal_set_message('The site API key has been set as'.variable_get('siteapikey'));
+  }
+}
